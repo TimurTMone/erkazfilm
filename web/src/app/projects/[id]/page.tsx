@@ -7,11 +7,11 @@ import { useLanguage, localized } from "@/components/LanguageProvider";
 import { movies, MovieTask } from "@/data/movies";
 import { actors } from "@/data/actors";
 
-const statusColors = {
-  pre: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
-  production: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
-  post: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
-  completed: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400",
+const statusBadges = {
+  pre: "badge-primary",
+  production: "badge-accent",
+  post: "badge-primary",
+  completed: "badge-success",
 };
 
 const taskStatusLabels: Record<string, Record<string, string>> = {
@@ -71,8 +71,8 @@ export default function ProjectDetailPage() {
   const columns: MovieTask["status"][] = ["todo", "in_progress", "done"];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 animate-fade-in">
-      <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-primary-500 mb-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-16 animate-fade-in">
+      <Link href="/projects" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-primary-500 mb-10 transition-colors">
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
         </svg>
@@ -80,51 +80,54 @@ export default function ProjectDetailPage() {
       </Link>
 
       {/* Header */}
-      <div className={`rounded-2xl bg-gradient-to-br ${movie.gradient} p-8 mb-8`}>
-        <span className={`badge ${statusColors[movie.status]}`}>
-          {t(`projects.status.${movie.status}`)}
-        </span>
-        <h1 className="text-3xl md:text-4xl font-bold text-white mt-3">{title}</h1>
-        <p className="text-white/80 mt-2 max-w-2xl">{desc}</p>
+      <div className={`rounded-3xl bg-gradient-to-br ${movie.gradient} p-10 md:p-12 mb-10 relative overflow-hidden noise animate-slide-up stagger-1`}>
+        <div className="absolute inset-0 bg-black/5" />
+        <div className="relative z-10">
+          <span className={`${statusBadges[movie.status]}`}>
+            {t(`projects.status.${movie.status}`)}
+          </span>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mt-4 drop-shadow-lg">{title}</h1>
+          <p className="text-white/80 mt-3 max-w-2xl text-lg">{desc}</p>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
-          {[
-            { label: t("projects.director"), value: director },
-            { label: genre, value: movie.budget },
-            { label: t("projects.deadline"), value: movie.deadline },
-            { label: t("projects.team"), value: `${movie.teamSize} people` },
-          ].map((item) => (
-            <div key={item.label} className="bg-white/10 rounded-xl p-3">
-              <div className="text-white/60 text-xs">{item.label}</div>
-              <div className="text-white font-semibold mt-0.5">{item.value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Progress */}
-        <div className="mt-6">
-          <div className="flex justify-between text-sm text-white/80 mb-2">
-            <span>{t("projects.progress")}</span>
-            <span className="font-bold text-white">{movie.progress}%</span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+            {[
+              { label: t("projects.director"), value: director },
+              { label: genre, value: movie.budget },
+              { label: t("projects.deadline"), value: movie.deadline },
+              { label: t("projects.team"), value: `${movie.teamSize} people` },
+            ].map((item, i) => (
+              <div key={item.label} className={`bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10 animate-slide-up stagger-${i + 2}`}>
+                <div className="text-white/60 text-xs uppercase tracking-wide">{item.label}</div>
+                <div className="text-white font-bold mt-1 text-lg">{item.value}</div>
+              </div>
+            ))}
           </div>
-          <div className="w-full h-3 bg-white/20 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-white rounded-full transition-all"
-              style={{ width: `${movie.progress}%` }}
-            />
+
+          {/* Progress */}
+          <div className="mt-8">
+            <div className="flex justify-between text-sm text-white/80 mb-2">
+              <span>{t("projects.progress")}</span>
+              <span className="font-bold text-white text-lg">{movie.progress}%</span>
+            </div>
+            <div className="w-full h-3.5 bg-white/20 rounded-full overflow-hidden backdrop-blur-sm">
+              <div
+                className="h-full bg-white rounded-full transition-all animate-pulse-glow"
+                style={{ width: `${movie.progress}%` }}
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-10">
         {/* Kanban Board */}
-        <div className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold">{t("projects.tasks")}</h2>
+        <div className="lg:col-span-2 animate-slide-up stagger-3">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-2xl font-extrabold gradient-text">{t("projects.tasks")}</h2>
           </div>
 
           {/* Add task */}
-          <div className="flex gap-2 mb-6">
+          <div className="flex gap-3 mb-8">
             <input
               type="text"
               value={newTaskName}
@@ -139,22 +142,22 @@ export default function ProjectDetailPage() {
           </div>
 
           {/* Kanban */}
-          <div className="grid md:grid-cols-3 gap-4">
-            {columns.map((col) => {
+          <div className="grid md:grid-cols-3 gap-5">
+            {columns.map((col, colIdx) => {
               const colTasks = localTasks.filter((task) => task.status === col);
               return (
-                <div key={col} className="kanban-column">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className={`w-2.5 h-2.5 rounded-full ${
-                      col === "todo" ? "bg-zinc-400" : col === "in_progress" ? "bg-amber-500" : "bg-emerald-500"
+                <div key={col} className={`kanban-column animate-slide-up stagger-${colIdx + 4}`}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className={`w-3 h-3 rounded-full ${
+                      col === "todo" ? "bg-zinc-400" : col === "in_progress" ? "bg-amber-500 animate-pulse-glow" : "bg-emerald-500"
                     }`} />
-                    <h3 className="font-semibold text-sm">
+                    <h3 className="font-bold text-sm">
                       {taskStatusLabels[col][locale]}
                     </h3>
-                    <span className="text-xs text-zinc-400 ml-auto">{colTasks.length}</span>
+                    <span className="text-xs text-zinc-400 ml-auto badge-primary">{colTasks.length}</span>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {colTasks.map((task) => {
                       const taskTitle = localized(task, "title", locale);
                       return (
@@ -163,8 +166,8 @@ export default function ProjectDetailPage() {
                           onClick={() => toggleTask(task.id)}
                           className="kanban-card"
                         >
-                          <p className="text-sm font-medium">{taskTitle}</p>
-                          <div className="flex items-center justify-between mt-2 text-xs text-zinc-400">
+                          <p className="text-sm font-semibold">{taskTitle}</p>
+                          <div className="flex items-center justify-between mt-2.5 text-xs text-zinc-400">
                             <span>{task.assignee}</span>
                             <span>{task.dueDate}</span>
                           </div>
@@ -179,23 +182,23 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* Cast Sidebar */}
-        <div>
-          <h2 className="text-xl font-bold mb-4">{t("projects.cast")}</h2>
+        <div className="animate-slide-up stagger-5">
+          <h2 className="text-2xl font-extrabold mb-6 gradient-text">{t("projects.cast")}</h2>
           <div className="space-y-3">
-            {castMembers.map((actor) => {
+            {castMembers.map((actor, i) => {
               const actorName = localized(actor, "name", locale);
               return (
                 <Link
                   key={actor.id}
                   href={`/actors/${actor.id}`}
-                  className="glass-card p-4 flex items-center gap-3 group block"
+                  className={`glass-card-glow p-4 flex items-center gap-4 group block animate-slide-up stagger-${Math.min(i + 6, 8)}`}
                 >
-                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${actor.avatar} flex items-center justify-center flex-shrink-0`}>
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${actor.avatar} flex items-center justify-center flex-shrink-0 shadow-lg`}>
                     <span className="text-white font-bold text-sm">{actor.name.charAt(0)}</span>
                   </div>
                   <div>
-                    <div className="font-medium text-sm group-hover:text-primary-500 transition-colors">{actorName}</div>
-                    <div className="text-xs text-zinc-400">{actor.experience} {t("actors.years")} exp</div>
+                    <div className="font-semibold text-sm group-hover:text-primary-500 transition-colors">{actorName}</div>
+                    <div className="text-xs text-zinc-400 mt-0.5">{actor.experience} {t("actors.years")} exp</div>
                   </div>
                 </Link>
               );
@@ -205,16 +208,16 @@ export default function ProjectDetailPage() {
           {/* AI Casting CTA */}
           <Link
             href="/ai-casting"
-            className="mt-4 glass-card p-4 flex items-center gap-3 border-dashed border-primary-300 dark:border-primary-700 hover:border-primary-500 block"
+            className="mt-6 glass-card-glow p-5 flex items-center gap-4 border-dashed border-primary-300 dark:border-primary-700 hover:border-primary-500 block animate-scale-in"
           >
-            <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-              <svg className="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center animate-pulse-glow">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
               </svg>
             </div>
             <div>
-              <div className="font-medium text-sm text-primary-600 dark:text-primary-400">{t("features.ai.title")}</div>
-              <div className="text-xs text-zinc-400">{t("ai.subtitle")}</div>
+              <div className="font-bold text-sm gradient-text">{t("features.ai.title")}</div>
+              <div className="text-xs text-zinc-400 mt-0.5">{t("ai.subtitle")}</div>
             </div>
           </Link>
         </div>
