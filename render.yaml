@@ -1,15 +1,17 @@
 services:
   - type: web
-    runtime: node
-    name: erkaz-web
-    rootDir: web
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    runtime: docker
+    name: erkaz-api
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     envVars:
-      - key: NODE_ENV
-        value: production
-      - key: PORT
-        value: 3000
+      - key: DATABASE_URL
+        value: postgresql+asyncpg://neondb_owner:npg_3NKgvsFrW5io@ep-blue-boat-amiwae15-pooler.c-5.us-east-1.aws.neon.tech/neondb
+      - key: CORS_ORIGINS
+        value: "https://erkazfilm.onrender.com,https://erkaz.vercel.app,http://localhost:3000"
+      - key: ADMIN_SECRET
+        value: "erkaz-admin-2024"
     autoDeploy: true
     plan: free
-    healthCheckPath: /
+    healthCheckPath: /health

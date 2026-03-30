@@ -1,15 +1,34 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useLanguage, localized } from "@/components/LanguageProvider";
-import { actors } from "@/data/actors";
-import { movies } from "@/data/movies";
+import { Actor } from "@/data/actors";
+import { fetchActor, toErkazActor } from "@/lib/api";
 
 export default function ActorProfilePage() {
   const { t, locale } = useLanguage();
   const params = useParams();
-  const actor = actors.find((a) => a.id === params.id);
+  const [actor, setActor] = useState<(Actor & Record<string, unknown>) | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const id = Number(params.id);
+    if (!id) { setLoading(false); return; }
+    fetchActor(id)
+      .then((a) => setActor(toErkazActor(a) as Actor & Record<string, unknown>))
+      .catch(() => setActor(null))
+      .finally(() => setLoading(false));
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-20 text-center">
+        <div className="w-12 h-12 mx-auto mb-4 rounded-full border-4 border-primary-500/30 border-t-primary-500 animate-spin" />
+      </div>
+    );
+  }
 
   if (!actor) {
     return (
@@ -24,7 +43,6 @@ export default function ActorProfilePage() {
   const city = localized(actor, "city", locale);
   const bio = localized(actor, "bio", locale);
   const skills = localized(actor, "skills", locale) as unknown as string[];
-  const actorMovies = movies.filter((m) => m.castIds.includes(actor.id));
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 animate-fade-in">
@@ -100,37 +118,38 @@ export default function ActorProfilePage() {
           <div className="glass-card-glow p-7 animate-slide-up stagger-4">
             <h2 className="font-bold text-lg mb-4">{t("actors.languages")}</h2>
             <div className="flex flex-wrap gap-2">
-              {actor.languages.map((lang) => (
+              {actor.languages.map((lang: string) => (
                 <span key={lang} className="badge-accent text-sm px-4 py-1.5">{lang}</span>
               ))}
             </div>
           </div>
 
-          {actorMovies.length > 0 && (
+          {actor.portfolio && (
             <div className="glass-card-glow p-7 animate-slide-up stagger-5">
-              <h2 className="font-bold text-lg mb-5">{t("nav.projects")} ({actorMovies.length})</h2>
-              <div className="space-y-3">
-                {actorMovies.map((movie) => {
-                  const movieTitle = localized(movie, "title", locale);
-                  const movieGenre = localized(movie, "genre", locale);
-                  return (
-                    <Link key={movie.id} href={`/projects/${movie.id}`}
-                      className="flex items-center gap-4 p-4 rounded-xl hover:bg-zinc-50 dark:hover:bg-white/[0.02] transition-all border border-transparent hover:border-zinc-100 dark:hover:border-white/5 group">
-                      <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${movie.gradient} flex items-center justify-center flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform`}>
-                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.375 19.5h17.25" />
-                        </svg>
-                      </div>
-                      <div className="flex-1">
-                        <div className="font-semibold group-hover:text-primary-500 transition-colors">{movieTitle}</div>
-                        <div className="text-sm text-zinc-400">{movieGenre} &middot; {movie.year}</div>
-                      </div>
-                      <svg className="w-5 h-5 text-zinc-300 dark:text-zinc-600 group-hover:text-primary-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                      </svg>
-                    </Link>
-                  );
-                })}
+              <h2 className="font-bold text-lg mb-3">Portfolio</h2>
+              <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[15px]">{actor.portfolio as string}</p>
+            </div>
+          )}
+
+          {actor.theater && (
+            <div className="glass-card-glow p-7 animate-slide-up stagger-6">
+              <h2 className="font-bold text-lg mb-3">{t("nav.projects") || "Theater"}</h2>
+              <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed text-[15px]">{actor.theater as string}</p>
+            </div>
+          )}
+
+          {(actor.phone || actor.email || actor.socialLinks) && (
+            <div className="glass-card-glow p-7 animate-slide-up stagger-7">
+              <h2 className="font-bold text-lg mb-3">{t("actors.contact")}</h2>
+              <div className="space-y-2 text-sm text-zinc-500 dark:text-zinc-400">
+                {actor.phone && <p>Tel: {actor.phone as string}</p>}
+                {actor.email && <p>Email: {actor.email as string}</p>}
+                {actor.socialLinks && <p>Social: {actor.socialLinks as string}</p>}
+                {actor.videoShowreel && (
+                  <a href={actor.videoShowreel as string} target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:underline block">
+                    Showreel / Video
+                  </a>
+                )}
               </div>
             </div>
           )}
